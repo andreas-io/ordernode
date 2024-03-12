@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iofrm</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/fontawesome-all.min.css">
+    <link rel="stylesheet" type="text/css" href="css/iofrm-style.css">
+    <link rel="stylesheet" type="text/css" href="css/iofrm-theme28.css">
+
+    <style>
+        #scanner-container {
+            width: 100%; /* Adjust to the width you want */
+            height: 200px; /* Adjust to the height you want */
+            overflow: hidden; /* Hide any part of the video that goes outside the container */
+            position: relative; /* Use relative positioning to keep the video inside the container */
+        }
+
+        .img-holder {
+    width: 1200px;
+    
+}
+
+.form-holder {
+    margin-left: 1200px;
+}
+
+
+    /* #scanner-container video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+        }*/
+      
+
+    </style>
+</head>
+<body>
+    <div class="form-body">
+        <div class="website-logo">
+            <a href="index.html">
+                <div class="logo">
+                    <img class="logo-size" src="images/logo-light.svg" alt="">
+                </div>
+            </a>
+        </div>
+        <div class="row">
+            <div class="img-holder">
+                <div class="bg"></div>
+                <div class="info-holder">
+
+                </div>
+            </div>
+            <div class="form-holder">
+                <div class="form-content">
+                    <div class="form-items">
+                        <h3>Get more things done with Loggin platform.</h3>
+                        <p>Access to the most powerfull tool in the entire design and web industry.</p>
+
+
+
+
+                        <!--The form-->
+                        <form id="login-form" class="needs-validation" action="https://shop.chelmsfordsafety.co.uk/login.php" method="POST" novalidate>
+                            <div class="mb-3">
+                                <label for="username">Email address</label>
+                                <input type="email" class="form-control" id="username" name="username" placeholder="you@example.com" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                            </div>
+                            <button class="btn btn-primary btn-lg btn-block" type="submit" id="login-button">Login</button>
+                        </form>
+
+
+                        <div class="mb-3">
+                            <div id="scanner-container"></div>
+                        </div>
+
+                        <!--The original form-->
+                        <!--
+                            <div class="page-links">
+                            <a href="login24.html" class="active">Login</a><a href="register24.html">Register</a>
+                        </div>
+                        <form>
+                            <input class="form-control" type="text" name="username" placeholder="E-mail Address" required>
+                            <input class="form-control" type="password" name="password" placeholder="Password" required>
+                            <div class="form-button">
+                                <button id="submit" type="submit" class="ibtn">Login</button> <a href="forget24.html">Forget password?</a>
+                            </div>
+                        </form>
+                        <div class="other-links">
+                            <span>Or login with</span><a href="#">Facebook</a><a href="#">Google</a><a href="#">Linkedin</a>
+                        </div>
+                        -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="js/jquery.min.js"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/main.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+<script>
+    Quagga.init({
+        inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector('#scanner-container'),
+            constraints: {
+                facingMode: "environment" 
+            },
+        },
+        decoder: {
+            readers: [
+                "code_128_reader",
+                "ean_reader",
+                "ean_8_reader",
+                "code_39_reader",
+                "code_39_vin_reader",
+                "codabar_reader",
+                "upc_reader",
+                "upc_e_reader",
+                "i2of5_reader",
+                "2of5_reader",
+                "code_93_reader"
+            ]
+        }
+    }, function (err) {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        Quagga.start();
+    });
+
+    Quagga.onDetected(function (result) {
+        var code = result.codeResult.code;
+        var username = code; 
+        var password = "1";
+
+        document.getElementById('username').value = username;
+        document.getElementById('password').value = password;
+        document.getElementById('login-form').submit();
+    });
+</script>
+</body>
+</html>
