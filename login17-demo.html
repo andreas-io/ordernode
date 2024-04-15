@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iofrm</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/fontawesome-all.min.css">
+    <link rel="stylesheet" type="text/css" href="css/iofrm-style.css">
+    <link rel="stylesheet" type="text/css" href="css/iofrm-theme17.css">
+</head>
+<body onload="document.getElementById('username').focus();">
+    <div class="form-body without-side">
+        <div class="website-logo">
+            <a href="index.html">
+                <div class="logo">
+                    <img class="logo-size" src="images/ordernode.png" alt="">
+                </div>
+            </a>
+        </div>
+        <div class="row">
+            <div class="img-holder">
+                <div class="bg"></div>
+                <div class="info-holder">
+                    <img src="images/graphic3.svg" alt="">
+                </div>
+            </div>
+            <div class="form-holder">
+                <div class="form-content">
+                    <div class="form-items">
+                        <div class="form-icon">
+                            <div class="icon-holder"><img src="images/css_logo.jpeg" alt=""></div>
+                        </div>
+                        <h3>Login to your account</h3>
+                        <p>Swipe your card to quickly access your Chelmsford Safety account.</p>
+                        <img src="images/swipe.gif" alt="Swipe Card" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+                        <!-- The form -->
+                        <form id="login-form" action="https://shop.chelmsfordsafety.co.uk/login.php" method="POST">
+                            <input class="form-control" type="password" id="username" name="username" placeholder="Swipe your card." required>
+                            <input type="hidden" id="password" name="password" value="EAS014">
+                            <div class="form-button">
+                                <button type="submit" class="ibtn">Login</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.getElementById('username').addEventListener('input', function(event) {
+            var inputData = event.target.value;
+            // Check if the card swipe data matches the specific string
+            if (inputData === "7082516517548558510-25033001000010577?") {
+                document.getElementById('username').value = "orders@eastsuffolkservices.co.uk"; // Replace with the specific email
+                setTimeout(function() {
+                    document.getElementById('login-form').submit(); // Auto-submit the form
+                }, 500); // Short delay to process the swipe data
+            }
+        });
+    </script>
+</body>
+</html>
