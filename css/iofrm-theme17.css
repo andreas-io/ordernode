@@ -39,7 +39,7 @@ body {
 }
 
 .website-logo .logo img {
-    width: 100px;
+    width: 160px;
 }
 
 .website-logo-inside img {
@@ -84,7 +84,7 @@ body {
 
 .img-holder .bg {
     opacity: 0.23;
-    background-image: url("../images/_DSC0140.jpeg");
+    background-image: url("../images/_DSC0140.JPG");
 }
 
 .form-holder {
