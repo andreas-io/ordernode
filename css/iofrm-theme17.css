@@ -35,7 +35,7 @@ body {
 }
 
 .website-logo .logo {
-    background-image: url("../images/logo-light.svg");
+    background-image: url("../images/ordernode1.png");
 }
 
 .website-logo .logo img {
@@ -47,7 +47,7 @@ body {
 }
 
 .website-logo-inside .logo {
-    background-image: url("../images/logo-light.svg");
+    background-image: url("../images/ordernode.png");
 }
 
 .website-logo-inside .logo img {
@@ -61,7 +61,7 @@ body {
 
 .img-holder .info-holder h3 {
     color: #fff;
-    text-align: left;
+    text-align: center;
 }
 
 .img-holder .info-holder h3 span {
@@ -70,7 +70,7 @@ body {
 
 .img-holder .info-holder h2 {
     color: #fff;
-    text-align: left;
+    text-align: center;
 }
 
 .img-holder .info-holder h2 span {
@@ -79,12 +79,12 @@ body {
 
 .img-holder .info-holder p {
     color: #fff;
-    text-align: left;
+    text-align: center;
 }
 
 .img-holder .bg {
     opacity: 0.23;
-    background-image: url("../images/img1.jpg");
+    background-image: url("../images/_DSC0140.JPG");
 }
 
 .form-holder {
@@ -117,7 +117,7 @@ body {
 
 .form-content .form-items {
     max-width: 340px;
-    text-align: left;
+    text-align: center;
 }
 
 .form-content .form-icon {
@@ -125,22 +125,22 @@ body {
 }
 
 .form-content .form-icon .icon-holder {
-    background-color: #4A77F7;
+    background-color: #ffffff;
 }
 
 .form-content h3 {
     color: #fff;
-    text-align: left;
+    text-align: center;
 }
 
 .form-content p {
     color: #fff;
-    text-align: left;
+    text-align: center;
 }
 
 .form-content label {
     color: #fff;
-    text-align: left;
+    text-align: center;
 }
 
 .form-content .page-links a {
@@ -239,14 +239,14 @@ body {
 }
 
 .form-content .form-button .ibtn {
-    background-color: #29A4FF;
+    background-color: #0057A8;
     color: #fff;
     -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0.16);
     box-shadow: 0 0 0 rgba(0, 0, 0, 0.16);
 }
 
 .form-content .form-button .ibtn:hover, .form-content .form-button .ibtn:focus {
-    background-color: #29A4FF;
+    background-color: #0057A8;
     color: #fff;
     -webkit-box-shadow: 0 5px 6px rgba(0, 0, 0, 0.16);
     box-shadow: 0 5px 6px rgba(0, 0, 0, 0.16);
@@ -502,7 +502,7 @@ body {
 }
 
 .form-body.without-side .form-content .form-button .ibtn {
-    background-color: #29A4FF;
+    background-color: #0057A8;
     color: #fff;
     -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0.16);
     box-shadow: 0 0 0 rgba(0, 0, 0, 0.16);
@@ -533,10 +533,10 @@ body {
     }
 
     .website-logo .logo {
-        background-image: url("../images/logo-light.svg");
+        background-image: url("../images/ordernode.png");
     }
 
     .form-body.without-side .website-logo .logo {
-        background-image: url("../images/logo-light.svg");
+        background-image: url("../images/ordernode.png");
     }
 }
