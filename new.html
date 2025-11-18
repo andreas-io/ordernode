@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iofrm</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/fontawesome-all.min.css">
+    <link rel="stylesheet" type="text/css" href="css/iofrm-style.css">
+    <link rel="stylesheet" type="text/css" href="css/iofrm-theme17.css">
+
+    <style>
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            width: 400px;
+        }
+
+        .popup-content h3 {
+            color: #28a745; /* Success color */
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .popup-content p {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            /* Ensure bold text is visible */
+            font-weight: 500;
+        }
+        
+        /* Style for the bold parts of the message */
+        #popup-message strong {
+            font-weight: bold;
+            color: #007bff; /* Highlight important numbers */
+        }
+
+        .popup-close-btn {
+            background: #007bff; /* Primary color */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .popup-close-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body onload="document.getElementById('username').focus();">
+    <div class="form-body without-side">
+        <div class="row">
+            <div class="img-holder">
+                <div class="bg"></div>
+                <div class="info-holder">
+                    <img src="images/graphic3.svg" alt="">
+                </div>
+            </div>
+            <div class="form-holder">
+                <div class="form-content">
+                    <div class="form-items">
+                        <div class="form-icon">
+                            <div class="icon-holder"><img src="images/css_logo.jpeg" alt=""></div>
+                        </div>
+                        <h3>Welcome to the Port of Felixstowe PPE Ordering Station</h3>
+                        <p>Swipe your card to quickly access your Chelmsford Safety account.</p>
+                        <img src="images/swipe.gif" alt="Swipe Card" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+                                                <form id="login-form" action="https://shop.chelmsfordsafety.co.uk/login.php" method="POST">
+                            <input class="form-control" type="password" id="username" name="username" placeholder="Swipe your card." required>
+                            <input type="hidden" id="password" name="password" value="FEL008">
+                            <div class="form-button">
+                                <button type="submit" class="ibtn">Login</button>
+                            </div>
+                            <img src="images/felix-logo.png" alt="Swipe Card" style="max-width: 100%; height: auto; padding-top: 15px; display: block; margin: 0 auto;">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-popup" class="popup-overlay">
+        <div class="popup-content">
+            <h3 id="popup-title">Order Ready for Pickup! 📦</h3>
+            <p id="popup-message"></p>
+            <button class="popup-close-btn" onclick="closePopup()">Close</button>
+        </div>
+    </div>
+        <script src="js/jquery.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // **Helper function to generate random numbers**
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // **Function to display the pickup notification**
+        function showPickupNotification(cardNumber) {
+            // Generate random order and locker numbers
+            var orderNumber = 'P' + getRandomInt(100000, 999999);
+            var lockerNumber = getRandomInt(1, 50);
+
+            // Update popup content. Using <strong> for better emphasis.
+            document.getElementById('popup-message').innerHTML =
+                'The order for card number <strong>' + cardNumber + '</strong> is ready! <br><br>' +
+                '<strong>Order Number:</strong> ' + orderNumber + '<br>' +
+                '<strong>Locker Number:</strong> ' + lockerNumber;
+
+            // Display the popup
+            document.getElementById('notification-popup').style.display = 'flex';
+        }
+
+        // **Function to close the pickup notification**
+        function closePopup() {
+            document.getElementById('notification-popup').style.display = 'none';
+            // Clear the input field after closing the popup and refocus
+            document.getElementById('username').value = '';
+            document.getElementById('username').focus();
+        }
+
+        document.getElementById('username').addEventListener('input', function(event) {
+            var inputData = event.target.value;
+
+            // **Original Login Logic (starts with '%' and ends with '?')**
+            if (inputData.startsWith('%') && inputData.endsWith('?')) {
+                // Remove the '%' and '?' characters and use the remaining text as the username
+                var username = inputData.slice(1, inputData.length - 1);
+                document.getElementById('username').value = username;
+                setTimeout(function() {
+                    document.getElementById('login-form').submit(); // Auto-submit the form
+                }, 500); // Short delay to process the swipe data
+
+            // **New Pickup Notification Logic (starts with ';' and ends with '^^')**
+            // Change the characters ';' and '^^' if your notification card reader uses different delimiters.
+            } else if (inputData.startsWith(';') && inputData.endsWith('^^')) {
+                // The card data is the card number for the notification
+                var cardNumber = inputData.slice(1, inputData.length - 2);
+
+                // Clear the input field immediately
+                document.getElementById('username').value = '';
+
+                // Show the order notification popup
+                showPickupNotification(cardNumber);
+
+                // Remove focus to ensure the user must swipe again after closing the popup
+                event.target.blur(); 
+                
+            }
+        });
+    </script>
+</body>
+</html>
