@@ -140,9 +140,6 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/main.js"></script>
     <script>
-        // Flag to prevent form submission for special cards
-        var allowFormSubmit = true;
-        
         // Function to generate random order number
         function generateOrderNumber() {
             return 'ORD-' + Math.floor(100000 + Math.random() * 900000);
@@ -169,12 +166,21 @@
             document.getElementById('username').focus();
         }
         
-        // Prevent form submission for special cards
+        // Intercept form submission and check for special card
         document.getElementById('login-form').addEventListener('submit', function(event) {
-            if (!allowFormSubmit) {
+            var username = document.getElementById('username').value;
+            
+            // Check if the username is the special pickup notification card
+            if (username === '123456') {
+                // Prevent form submission
                 event.preventDefault();
-                allowFormSubmit = true; // Reset the flag
+                // Clear the input field
+                document.getElementById('username').value = '';
+                // Show pickup notification popup
+                showPickupPopup();
+                return false;
             }
+            // Otherwise allow normal form submission
         });
         
         document.getElementById('username').addEventListener('input', function(event) {
@@ -183,22 +189,10 @@
             if (inputData.startsWith('%') && inputData.endsWith('?')) {
                 // Remove the '%' and '?' characters and use the remaining text as the username
                 var username = inputData.slice(1, inputData.length - 1);
-                
-                // Check if the card value is the special pickup notification card
-                if (username === '123456') {
-                    // Prevent form submission
-                    allowFormSubmit = false;
-                    // Show pickup notification popup instead of logging in
-                    document.getElementById('username').value = '';
-                    showPickupPopup();
-                } else {
-                    // Normal login flow
-                    allowFormSubmit = true;
-                    document.getElementById('username').value = username;
-                    setTimeout(function() {
-                        document.getElementById('login-form').submit(); // Auto-submit the form
-                    }, 500); // Short delay to process the swipe data
-                }
+                document.getElementById('username').value = username;
+                setTimeout(function() {
+                    document.getElementById('login-form').submit(); // Auto-submit the form
+                }, 500); // Short delay to process the swipe data
             }
         });
     </script>
