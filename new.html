@@ -140,6 +140,9 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/main.js"></script>
     <script>
+        // Flag to prevent form submission for special cards
+        var allowFormSubmit = true;
+        
         // Function to generate random order number
         function generateOrderNumber() {
             return 'ORD-' + Math.floor(100000 + Math.random() * 900000);
@@ -166,6 +169,14 @@
             document.getElementById('username').focus();
         }
         
+        // Prevent form submission for special cards
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            if (!allowFormSubmit) {
+                event.preventDefault();
+                allowFormSubmit = true; // Reset the flag
+            }
+        });
+        
         document.getElementById('username').addEventListener('input', function(event) {
             var inputData = event.target.value;
             // Check if the input string starts with '%' and ends with '?'
@@ -175,11 +186,14 @@
                 
                 // Check if the card value is the special pickup notification card
                 if (username === '123456') {
+                    // Prevent form submission
+                    allowFormSubmit = false;
                     // Show pickup notification popup instead of logging in
                     document.getElementById('username').value = '';
                     showPickupPopup();
                 } else {
                     // Normal login flow
+                    allowFormSubmit = true;
                     document.getElementById('username').value = username;
                     setTimeout(function() {
                         document.getElementById('login-form').submit(); // Auto-submit the form
