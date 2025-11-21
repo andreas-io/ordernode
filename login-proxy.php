@@ -1,60 +1,114 @@
 <?php
 
-// Magento login page URL
-$loginPageUrl = "https://m2-prod-chelmsfordsafety-co-uk.cfstack.com/customer/account/login/";
-$loginPostUrl = "https://m2-prod-chelmsfordsafety-co-uk.cfstack.com/customer/account/loginPost/";
+// ------------------------------------------------------
+// CONFIG: Magento URLs
+// ------------------------------------------------------
 
-// Start CURL session
-$ch = curl_init();
+$magentoLoginPage = "https://m2-prod-chelmsfordsafety-co-uk.cfstack.com/customer/account/login/";
+$magentoLoginPost = "https://m2-prod-chelmsfordsafety-co-uk.cfstack.com/customer/account/loginPost/";
 
-// 1) First request: get login page to capture form_key + cookies
-curl_setopt($ch, CURLOPT_URL, $loginPageUrl);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HEADER, true);
-curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 
-$response = curl_exec($ch);
+// ------------------------------------------------------
+// GET DATA FROM THE HTML FORM
+// ------------------------------------------------------
 
-// Extract cookies
-preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $response, $matches);
-$cookies = implode('; ', $matches[1]);
+$username = $_POST['username'] ?? '';
+$password = $_POST['password'] ?? '';
 
-// Extract form_key
-preg_match('/name="form_key" value="([^"]+)"/', $response, $keyMatch);
-$form_key = $keyMatch[1] ?? "";
-
-// If we didn’t get a form_key, fail early
-if (!$form_key) {
-    die("Error: Could not retrieve form_key from Magento.");
+if (!$username || !$password) {
+    die("Missing username or password.");
 }
 
-// 2) Second request: submit login
-$postFields = [
-    'form_key' => $form_key,
-    'login[username]' => $_POST['username'],
-    'login[password]' => $_POST['password']
-];
 
-curl_setopt($ch, CURLOPT_URL, $loginPostUrl);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, ["Cookie: $cookies"]);
-curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
-curl_setopt($ch, CURLOPT_HEADER, true);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+// ------------------------------------------------------
+// STEP 1: Request Magento login page to obtain form_key + cookies
+// ------------------------------------------------------
+
+$ch = curl_init();
+
+curl_setopt_array($ch, [
+    CURLOPT_URL => $magentoLoginPage,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HEADER => true,            // include headers (for cookies)
+    CURLOPT_FOLLOWLOCATION => true,
+    CURLOPT_SSL_VERIFYPEER => false,
+    CURLOPT_SSL_VERIFYHOST => false
+]);
+
+$loginPageResponse = curl_exec($ch);
+
+if (!$loginPageResponse) {
+    die("Unable to reach Magento login page.");
+}
+
+
+// ------------------------------------------------------
+// EXTRACT COOKIE HEADER
+// ------------------------------------------------------
+
+preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $loginPageResponse, $cookieMatches);
+$cookies = implode('; ', $cookieMatches[1]);
+
+
+// ------------------------------------------------------
+// EXTRACT THE form_key VALUE
+// ------------------------------------------------------
+
+preg_match('/name="form_key" value="([^"]+)"/', $loginPageResponse, $formMatches);
+$form_key = $formMatches[1] ?? '';
+
+if (!$form_key) {
+    die("Unable to extract form_key from Magento.");
+}
+
+
+// ------------------------------------------------------
+// STEP 2: POST LOGIN REQUEST with form_key + cookies
+// ------------------------------------------------------
+
+curl_setopt_array($ch, [
+    CURLOPT_URL => $magentoLoginPost,
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => http_build_query([
+        "form_key" => $form_key,
+        "login[username]" => $username,
+        "login[password]" => $password,
+    ]),
+    CURLOPT_HTTPHEADER => [
+        "Cookie: $cookies",
+        "Content-Type: application/x-www-form-urlencoded"
+    ],
+    CURLOPT_HEADER => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_FOLLOWLOCATION => false
+]);
 
 $loginResponse = curl_exec($ch);
 
-// Capture redirected location
-preg_match('/Location:\s*(.*)\s/i', $loginResponse, $locationMatch);
+if (!$loginResponse) {
+    die("Error submitting login to Magento.");
+}
+
+
+// ------------------------------------------------------
+// EXTRACT REDIRECT (Magento redirects to customer account)
+// ------------------------------------------------------
+
+preg_match('/Location:\s*(.*)\s/i', $loginResponse, $redirectMatch);
+$redirectUrl = trim($redirectMatch[1] ?? "");
 
 curl_close($ch);
 
-// Redirect user to Magento after successful login
-if (!empty($locationMatch[1])) {
-    header("Location: " . trim($locationMatch[1]));
+
+// ------------------------------------------------------
+// REDIRECT USER TO MAGENTO ACCOUNT
+// ------------------------------------------------------
+
+if ($redirectUrl) {
+    header("Location: $redirectUrl");
     exit;
 }
 
-// If nothing was returned, show error
-echo "Magento Login Failed.";
+// If no redirect, login failed
+echo "Magento login failed. Check credentials.";
 ?>
