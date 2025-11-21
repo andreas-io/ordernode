@@ -2,103 +2,108 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Felixstowe PPE Ordering Station</title>
-
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/fontawesome-all.min.css">
-    <link rel="stylesheet" href="css/iofrm-style.css">
-    <link rel="stylesheet" href="css/iofrm-theme17.css">
+    <title>PPE Kiosk Auto Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
-        body { margin: 0; padding: 0; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        #m2frame {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* Hidden swipe input */
+        #swipeInput {
+            position: absolute;
+            top: -200px;
+            opacity: 0;
+        }
     </style>
 </head>
 
-<body onload="document.getElementById('username').focus();">
+<body>
 
-    <div class="form-body without-side">
-        <div class="row">
+<!-- Hidden input to capture swipe -->
+<input type="password" id="swipeInput" autofocus>
 
-            <div class="img-holder">
-                <div class="bg"></div>
-                <div class="info-holder">
-                    <img src="images/graphic3.svg" alt="">
-                </div>
-            </div>
+<!-- Magento login page -->
+<iframe 
+    id="m2frame"
+    src="https://m2-prod-chelmsfordsafety-co-uk.cfstack.com/customer/account/login/"
+    onload="setupAutoFill()">
+</iframe>
 
-            <div class="form-holder">
-                <div class="form-content">
-                    <div class="form-items">
+<script>
+/*
+    Step 1: Listen for card swipe
+*/
+document.getElementById('swipeInput').addEventListener('input', function(e) {
+    const v = e.target.value;
 
-                        <div class="form-icon">
-                            <div class="icon-holder">
-                                <img src="images/css_logo.jpeg" alt="">
-                            </div>
-                        </div>
+    if (v.startsWith('%') && v.endsWith('?')) {
+        const cleanUser = v.slice(1, -1);
+        window.swipedUser = cleanUser;
 
-                        <h3>Welcome to the Port of Felixstowe PPE Ordering Station</h3>
-                        <p>Swipe your card to quickly access your Chelmsford Safety account.</p>
+        // Clear input so next swipe works
+        e.target.value = "";
 
-                        <img src="images/swipe.gif"
-                             style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+        // Try autofill immediately if frame is ready
+        autoFillIfReady();
+    }
+});
 
-                        <!-- IMPORTANT: FORM POSTS TO THE PROXY -->
-                        <form id="login-form" action="login-proxy.php" method="POST">
 
-                            <input class="form-control"
-                                   type="password"
-                                   id="username"
-                                   name="username"
-                                   placeholder="Swipe your card."
-                                   required>
+/*
+    Step 2: When iframe loads, prepare to interact with it
+*/
+function setupAutoFill() {
+    // Try to run autofill once iframe is loaded
+    autoFillIfReady();
+}
 
-                            <input type="hidden"
-                                   id="password"
-                                   name="password"
-                                   value="FEL008!">
 
-                            <div class="form-button">
-                                <button type="submit" class="ibtn">Login</button>
-                            </div>
+/*
+    Step 3: Autofill function
+*/
+function autoFillIfReady() {
 
-                            <img src="images/felix-logo.png"
-                                 style="max-width: 100%; height: auto; padding-top: 15px; display: block; margin: 0 auto;">
-                        </form>
+    const username = window.swipedUser;
+    if (!username) {
+        return; // No card swiped yet
+    }
 
-                    </div>
-                </div>
-            </div>
+    const frame = document.getElementById('m2frame');
+    const frameDoc = frame.contentWindow.document;
 
-        </div>
-    </div>
+    let emailField = frameDoc.querySelector('input[name="login[username]"]');
+    let pwField = frameDoc.querySelector('input[name="login[password]"]');
+    let signInBtn = frameDoc.querySelector('button[name="send"]');
 
-    <script src="js/jquery.min.js"></script>
-    <script src="js/popper.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/main.js"></script>
+    // If elements not available yet, retry
+    if (!emailField || !pwField || !signInBtn) {
+        setTimeout(autoFillIfReady, 300);
+        return;
+    }
 
-    <!-- AUTO-SWIPE SUBMISSION LOGIC -->
-    <script>
-        document.getElementById('username').addEventListener('input', function(event) {
-            let input = event.target.value;
+    // Fill username
+    emailField.value = username;
 
-            // Detect magnetic stripe format %...?
-            if (input.startsWith('%') && input.endsWith('?')) {
+    // Fill password
+    pwField.value = "FEL008!";
 
-                // Strip the % and ? characters
-                let clean = input.slice(1, -1);
-
-                // Insert cleaned username into field
-                document.getElementById('username').value = clean;
-
-                // Auto-submit after a small delay
-                setTimeout(() => {
-                    document.getElementById('login-form').submit();
-                }, 300);
-            }
-        });
-    </script>
+    // Click the Sign In button after slight delay
+    setTimeout(() => {
+        signInBtn.click();
+    }, 500);
+}
+</script>
 
 </body>
 </html>
