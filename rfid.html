@@ -162,12 +162,59 @@
             document.getElementById('username').focus();
         }
         
+        // Intercept form submission to check for pickup cards
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            var cardNumber = document.getElementById('username').value;
+            
+            // Check if this is a pickup notification card
+            if (pickupCards.indexOf(cardNumber) !== -1) {
+                // Prevent form submission
+                event.preventDefault();
+                // Clear the input field
+                document.getElementById('username').value = '';
+                // Show pickup notification popup
+                showPickupPopup();
+                return false;
+            }
+            // Otherwise allow normal form submission
+        });
+        
         document.getElementById('username').addEventListener('input', function(event) {
             var inputData = event.target.value;
             
+            // Check if input has delimiters from magnetic stripe reader
+            if (inputData.startsWith('%') && inputData.endsWith('?')) {
+                // Remove the '%' and '?' characters
+                var cardNumber = inputData.slice(1, inputData.length - 1);
+                
+                // Check if this is a pickup notification card
+                if (pickupCards.indexOf(cardNumber) !== -1) {
+                    // Clear the input field
+                    document.getElementById('username').value = '';
+                    // Show pickup notification popup
+                    showPickupPopup();
+                    return;
+                }
+                
+                // Check if this card is in the database
+                if (rfidDatabase.hasOwnProperty(cardNumber)) {
+                    // Replace card number with email address
+                    var email = rfidDatabase[cardNumber];
+                    document.getElementById('username').value = email;
+                    setTimeout(function() {
+                        document.getElementById('login-form').submit();
+                    }, 500);
+                } else {
+                    // Card not found - submit as-is
+                    document.getElementById('username').value = cardNumber;
+                    setTimeout(function() {
+                        document.getElementById('login-form').submit();
+                    }, 500);
+                }
+            }
             // RFID cards typically just scan the number directly (no % or ? delimiters)
-            // Check if input looks complete (10 digits for your RFID format)
-            if (inputData.length === 10 && /^\d+$/.test(inputData)) {
+            // Check if input looks complete (8 or 10 digits for your RFID format)
+            else if (inputData.length >= 8 && /^\d+$/.test(inputData)) {
                 var cardNumber = inputData;
                 
                 // Check if this is a pickup notification card
@@ -189,8 +236,7 @@
                         document.getElementById('login-form').submit(); // Auto-submit the form
                     }, 500); // Short delay to process the card data
                 } else {
-                    // Card not found in database - you can handle this case
-                    // For now, just submit with the card number as-is
+                    // Card not found in database - submit with the card number as-is
                     setTimeout(function() {
                         document.getElementById('login-form').submit(); // Auto-submit the form
                     }, 500);
