@@ -5,34 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iofrm</title>
 
-    <style>
-        #m2frame {
-            width: 0;
-            height: 0;
-            border: 0;
-            visibility: hidden;
-            position: absolute;
-            left: -9999px;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/fontawesome-all.min.css">
+    <link rel="stylesheet" type="text/css" href="css/iofrm-style.css">
+    <link rel="stylesheet" type="text/css" href="css/iofrm-theme17.css">
 
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/fontawesome-all.min.css">
-    <link rel="stylesheet" href="css/iofrm-style.css">
-    <link rel="stylesheet" href="css/iofrm-theme17.css">
+    <style>
+        body { margin: 0; padding: 0; }
+    </style>
 </head>
 
 <body onload="document.getElementById('username').focus();">
 
-    <!-- Hidden iframe that loads Magento login page -->
-    <iframe 
-        id="m2frame"
-        src="https://m2-prod-chelmsfordsafety-co-uk.cfstack.com/customer/account/login/"
-    ></iframe>
-
     <div class="form-body without-side">
         <div class="row">
-
             <div class="img-holder">
                 <div class="bg"></div>
                 <div class="info-holder">
@@ -43,39 +29,40 @@
             <div class="form-holder">
                 <div class="form-content">
                     <div class="form-items">
+
                         <div class="form-icon">
-                            <div class="icon-holder"><img src="images/css_logo.jpeg" alt=""></div>
+                            <div class="icon-holder">
+                                <img src="images/css_logo.jpeg" alt="">
+                            </div>
                         </div>
 
                         <h3>Welcome to the Port of Felixstowe PPE Ordering Station</h3>
                         <p>Swipe your card to quickly access your Chelmsford Safety account.</p>
 
-                        <img src="images/swipe.gif" alt="" style="max-width: 100%; display: block; margin: 0 auto;">
+                        <img src="images/swipe.gif" alt="Swipe Card"
+                             style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
 
-                        <!-- Updated form (Magento needs form_key + login fields) -->
-                        <form id="login-form" 
-                            action="https://m2-prod-chelmsfordsafety-co-uk.cfstack.com/customer/account/loginPost/"
-                            method="POST">
-
-                            <input type="hidden" name="form_key" id="form_key">
+                        <!-- FORM POSTS TO PHP PROXY -->
+                        <form id="login-form" action="login-proxy.php" method="POST">
 
                             <input class="form-control"
-                                type="password"
-                                id="username"
-                                name="login[username]"
-                                placeholder="Swipe your card."
-                                required>
+                                   type="password"
+                                   id="username"
+                                   name="username"
+                                   placeholder="Swipe your card."
+                                   required>
 
                             <input type="hidden"
-                                id="password"
-                                name="login[password]"
-                                value="FEL008!">
+                                   id="password"
+                                   name="password"
+                                   value="FEL008!">
 
                             <div class="form-button">
                                 <button type="submit" class="ibtn">Login</button>
                             </div>
 
-                            <img src="images/felix-logo.png" alt="" style="max-width: 100%; padding-top: 15px;">
+                            <img src="images/felix-logo.png" alt=""
+                                 style="max-width: 100%; height: auto; padding-top: 15px; display: block; margin: 0 auto;">
                         </form>
 
                     </div>
@@ -85,40 +72,29 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- AUTO-SWIPE LOGIN -->
     <script>
-        let formKeyLoaded = false;
-
-        // Extract Magento form key from iframe once it loads
-        document.getElementById('m2frame').onload = function () {
-            try {
-                const frameDoc = document.getElementById('m2frame').contentWindow.document;
-                const keyInput = frameDoc.querySelector('input[name="form_key"]');
-
-                if (keyInput) {
-                    document.getElementById('form_key').value = keyInput.value;
-                    formKeyLoaded = true;
-                }
-            } catch (err) {
-                console.warn("Form key cannot be read due to cross-domain restrictions.");
-            }
-        };
-
-        // Auto-swipe trigger
         document.getElementById('username').addEventListener('input', function (event) {
             var inputData = event.target.value;
 
+            // Check for %...?
             if (inputData.startsWith('%') && inputData.endsWith('?')) {
+
+                // Remove the % and ?
                 var username = inputData.slice(1, inputData.length - 1);
+
+                // Update field with the clean value
                 document.getElementById('username').value = username;
 
+                // Auto-submit after a small delay
                 setTimeout(function () {
-                    if (!formKeyLoaded) {
-                        alert("Form key not loaded yet. Wait 1 second and try again.");
-                        return;
-                    }
                     document.getElementById('login-form').submit();
-                }, 500);
+                }, 400);
             }
         });
     </script>
