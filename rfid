@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iofrm</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/fontawesome-all.min.css">
+    <link rel="stylesheet" type="text/css" href="css/iofrm-style.css">
+    <link rel="stylesheet" type="text/css" href="css/iofrm-theme17.css">
+    <style>
+        /* Popup overlay styles */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .popup-overlay.active {
+            display: flex;
+        }
+        
+        .popup-content {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .popup-content h2 {
+            color: #28a745;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        .popup-content .order-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .popup-content .order-info p {
+            font-size: 18px;
+            margin: 10px 0;
+            color: #333;
+        }
+        
+        .popup-content .order-info strong {
+            color: #007bff;
+            font-size: 24px;
+        }
+        
+        .popup-content button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        
+        .popup-content button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body onload="document.getElementById('username').focus();">
+    <!-- Pickup Notification Popup -->
+    <div class="popup-overlay" id="pickupPopup">
+        <div class="popup-content">
+            <h2>🎉 Order Ready for Pickup!</h2>
+            <div class="order-info">
+                <p id="pickupMessage">Your order is ready for collection in <strong>Boardroom Demo Locker</strong></p>
+            </div>
+            <button onclick="closePopup()">OK</button>
+        </div>
+    </div>
+
+    <div class="form-body without-side">
+        <div class="row">
+            <div class="img-holder">
+                <div class="bg"></div>
+                <div class="info-holder">
+                    <img src="images/graphic3.svg" alt="">
+                </div>
+            </div>
+            <div class="form-holder">
+                <div class="form-content">
+                    <div class="form-items">
+                        <div class="form-icon">
+                            <div class="icon-holder"><img src="images/css_logo.jpeg" alt=""></div>
+                        </div>
+                        <h3>Welcome to the Port of Felixstowe PPE Ordering Station</h3>
+                        <p>Swipe your card to quickly access your Chelmsford Safety account.</p>
+                        <img src="images/swipe.gif" alt="Swipe Card" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+                        <!-- The form -->
+                        <form id="login-form" action="https://shop.chelmsfordsafety.co.uk/login.php" method="POST">
+                            <input class="form-control" type="password" id="username" name="username" placeholder="Swipe your card." required>
+                            <input type="hidden" id="password" name="password" value="FEL008">
+                            <div class="form-button">
+                                <button type="submit" class="ibtn">Login</button>
+                            </div>
+                            <img src="images/felix-logo.png" alt="Swipe Card" style="max-width: 100%; height: auto; padding-top: 15px; display: block; margin: 0 auto;">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // RFID Card Database - Maps card numbers to email addresses
+        var rfidDatabase = {
+            '0008896675': 'user@fdrc.com',
+            // Add more card-to-email mappings here as needed
+            // '0008896676': 'another@example.com',
+        };
+        
+        // Pickup notification cards - These cards trigger the pickup popup
+        var pickupCards = ['00088830', '00088786'];
+        
+        // Function to show pickup popup (simplified - no order number)
+        function showPickupPopup() {
+            document.getElementById('pickupPopup').classList.add('active');
+        }
+        
+        // Function to close popup
+        function closePopup() {
+            document.getElementById('pickupPopup').classList.remove('active');
+            // Clear the input field
+            document.getElementById('username').value = '';
+            // Refocus on the input field
+            document.getElementById('username').focus();
+        }
+        
+        document.getElementById('username').addEventListener('input', function(event) {
+            var inputData = event.target.value;
+            
+            // RFID cards typically just scan the number directly (no % or ? delimiters)
+            // Check if input looks complete (10 digits for your RFID format)
+            if (inputData.length === 10 && /^\d+$/.test(inputData)) {
+                var cardNumber = inputData;
+                
+                // Check if this is a pickup notification card
+                if (pickupCards.indexOf(cardNumber) !== -1) {
+                    // Clear the input field
+                    document.getElementById('username').value = '';
+                    // Show pickup notification popup
+                    showPickupPopup();
+                    // DO NOT submit the form
+                    return;
+                }
+                
+                // Check if this card is in the database
+                if (rfidDatabase.hasOwnProperty(cardNumber)) {
+                    // Replace card number with email address
+                    var email = rfidDatabase[cardNumber];
+                    document.getElementById('username').value = email;
+                    setTimeout(function() {
+                        document.getElementById('login-form').submit(); // Auto-submit the form
+                    }, 500); // Short delay to process the card data
+                } else {
+                    // Card not found in database - you can handle this case
+                    // For now, just submit with the card number as-is
+                    setTimeout(function() {
+                        document.getElementById('login-form').submit(); // Auto-submit the form
+                    }, 500);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
