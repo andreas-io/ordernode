@@ -94,7 +94,7 @@
     <!-- Pickup Notification Popup -->
     <div class="popup-overlay" id="pickupPopup">
         <div class="popup-content">
-            <h2>Order Ready for Pickup!</h2>
+            <h2>🎉 Order Ready for Pickup!</h2>
             <div class="order-info">
                 <p id="pickupMessage">Your order is ready for collection in <strong>Boardroom Demo Locker</strong></p>
             </div>
@@ -141,12 +141,23 @@
         // RFID Card Database - Maps card numbers to email addresses
         var rfidDatabase = {
             '0008896675': 'user@fdrc.com',
+            '0008864155': 'admin@fdrc.com',
             // Add more card-to-email mappings here as needed
-            // '0008896676': 'another@example.com',
         };
         
-        // Pickup notification cards - These cards trigger the pickup popup
-        var pickupCards = ['00088830', '00088786'];
+        // Pickup notification cards with auto-login after 5 seconds
+        // Maps card number to email address
+        var pickupThenLoginCards = {
+            '0008883093': 'user@fdrc.com',
+            '0008897221': 'admin@fdrc.com'
+        };
+        
+        // Pickup notification cards (popup only, no login)
+        var pickupOnlyCards = ['00088830', '00088786'];
+        
+        // Variable to track if auto-login is pending
+        var autoLoginEmail = null;
+        var autoLoginTimer = null;
         
         // Function to show pickup popup (simplified - no order number)
         function showPickupPopup() {
@@ -156,18 +167,47 @@
         // Function to close popup
         function closePopup() {
             document.getElementById('pickupPopup').classList.remove('active');
-            // Clear the input field
-            document.getElementById('username').value = '';
-            // Refocus on the input field
-            document.getElementById('username').focus();
+            
+            // Clear any pending auto-login timer
+            if (autoLoginTimer) {
+                clearTimeout(autoLoginTimer);
+                autoLoginTimer = null;
+            }
+            
+            // If there's a pending auto-login, execute it now
+            if (autoLoginEmail) {
+                var email = autoLoginEmail;
+                autoLoginEmail = null;
+                document.getElementById('username').value = email;
+                document.getElementById('login-form').submit();
+            } else {
+                // Clear the input field
+                document.getElementById('username').value = '';
+                // Refocus on the input field
+                document.getElementById('username').focus();
+            }
+        }
+        
+        // Function to show popup and auto-login after 5 seconds
+        function showPickupThenLogin(email) {
+            // Store the email for auto-login
+            autoLoginEmail = email;
+            
+            // Show the popup
+            showPickupPopup();
+            
+            // Set timer to auto-close and login after 5 seconds
+            autoLoginTimer = setTimeout(function() {
+                closePopup();
+            }, 5000);
         }
         
         // Intercept form submission to check for pickup cards
         document.getElementById('login-form').addEventListener('submit', function(event) {
             var cardNumber = document.getElementById('username').value;
             
-            // Check if this is a pickup notification card
-            if (pickupCards.indexOf(cardNumber) !== -1) {
+            // Check if this is a pickup-only notification card
+            if (pickupOnlyCards.indexOf(cardNumber) !== -1) {
                 // Prevent form submission
                 event.preventDefault();
                 // Clear the input field
@@ -187,12 +227,21 @@
                 // Remove the '%' and '?' characters
                 var cardNumber = inputData.slice(1, inputData.length - 1);
                 
-                // Check if this is a pickup notification card
-                if (pickupCards.indexOf(cardNumber) !== -1) {
+                // Check if this is a pickup-only notification card
+                if (pickupOnlyCards.indexOf(cardNumber) !== -1) {
                     // Clear the input field
                     document.getElementById('username').value = '';
                     // Show pickup notification popup
                     showPickupPopup();
+                    return;
+                }
+                
+                // Check if this is a pickup-then-login card
+                if (pickupThenLoginCards.hasOwnProperty(cardNumber)) {
+                    // Clear the input field
+                    document.getElementById('username').value = '';
+                    // Show popup then auto-login
+                    showPickupThenLogin(pickupThenLoginCards[cardNumber]);
                     return;
                 }
                 
@@ -217,13 +266,22 @@
             else if (inputData.length >= 8 && /^\d+$/.test(inputData)) {
                 var cardNumber = inputData;
                 
-                // Check if this is a pickup notification card
-                if (pickupCards.indexOf(cardNumber) !== -1) {
+                // Check if this is a pickup-only notification card
+                if (pickupOnlyCards.indexOf(cardNumber) !== -1) {
                     // Clear the input field
                     document.getElementById('username').value = '';
                     // Show pickup notification popup
                     showPickupPopup();
                     // DO NOT submit the form
+                    return;
+                }
+                
+                // Check if this is a pickup-then-login card
+                if (pickupThenLoginCards.hasOwnProperty(cardNumber)) {
+                    // Clear the input field
+                    document.getElementById('username').value = '';
+                    // Show popup then auto-login
+                    showPickupThenLogin(pickupThenLoginCards[cardNumber]);
                     return;
                 }
                 
