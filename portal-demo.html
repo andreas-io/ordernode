@@ -145,7 +145,7 @@
             // Add more card-to-email mappings here as needed
         };
         
-        // Pickup notification cards with auto-login after 5 seconds
+        // Pickup notification cards with auto-login after clicking OK
         // Maps card number to email address
         var pickupThenLoginCards = {
             '0008883093': 'user@fdrc.com',
@@ -157,7 +157,6 @@
         
         // Variable to track if auto-login is pending
         var autoLoginEmail = null;
-        var autoLoginTimer = null;
         
         // Function to show pickup popup (simplified - no order number)
         function showPickupPopup() {
@@ -166,21 +165,18 @@
         
         // Function to close popup
         function closePopup() {
+            console.log('closePopup called, autoLoginEmail:', autoLoginEmail);
             document.getElementById('pickupPopup').classList.remove('active');
-            
-            // Clear any pending auto-login timer
-            if (autoLoginTimer) {
-                clearTimeout(autoLoginTimer);
-                autoLoginTimer = null;
-            }
             
             // If there's a pending auto-login, execute it now
             if (autoLoginEmail) {
                 var email = autoLoginEmail;
                 autoLoginEmail = null;
+                console.log('Auto-login with email:', email);
                 document.getElementById('username').value = email;
                 document.getElementById('login-form').submit();
             } else {
+                console.log('No auto-login, clearing field');
                 // Clear the input field
                 document.getElementById('username').value = '';
                 // Refocus on the input field
@@ -190,6 +186,7 @@
         
         // Function to show popup and login when OK is clicked
         function showPickupThenLogin(email) {
+            console.log('showPickupThenLogin called with email:', email);
             // Store the email for auto-login
             autoLoginEmail = email;
             
@@ -202,6 +199,7 @@
         // Intercept form submission to check for pickup cards
         document.getElementById('login-form').addEventListener('submit', function(event) {
             var cardNumber = document.getElementById('username').value;
+            console.log('Form submit intercepted, cardNumber:', cardNumber);
             
             // Check if this is a pickup-only notification card
             if (pickupOnlyCards.indexOf(cardNumber) !== -1) {
@@ -223,6 +221,7 @@
             if (inputData.startsWith('%') && inputData.endsWith('?')) {
                 // Remove the '%' and '?' characters
                 var cardNumber = inputData.slice(1, inputData.length - 1);
+                console.log('Magnetic stripe detected, cardNumber:', cardNumber);
                 
                 // Check if this is a pickup-only notification card
                 if (pickupOnlyCards.indexOf(cardNumber) !== -1) {
@@ -262,6 +261,7 @@
             // Check if input looks complete (8 or 10 digits for your RFID format)
             else if (inputData.length >= 8 && /^\d+$/.test(inputData)) {
                 var cardNumber = inputData;
+                console.log('RFID detected, cardNumber:', cardNumber);
                 
                 // Check if this is a pickup-only notification card
                 if (pickupOnlyCards.indexOf(cardNumber) !== -1) {
@@ -275,6 +275,7 @@
                 
                 // Check if this is a pickup-then-login card
                 if (pickupThenLoginCards.hasOwnProperty(cardNumber)) {
+                    console.log('Pickup-then-login card detected');
                     // Clear the input field
                     document.getElementById('username').value = '';
                     // Show popup then auto-login
