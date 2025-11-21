@@ -88,16 +88,9 @@
         .popup-content button:hover {
             background: #0056b3;
         }
-        
-        /* Hide the card scan input field */
-        #cardScanInput {
-            position: absolute;
-            left: -9999px;
-            opacity: 0;
-        }
     </style>
 </head>
-<body onload="document.getElementById('cardScanInput').focus();">
+<body onload="document.getElementById('username').focus();">
     <!-- Pickup Notification Popup -->
     <div class="popup-overlay" id="pickupPopup">
         <div class="popup-content">
@@ -110,9 +103,6 @@
     </div>
 
     <div class="form-body without-side">
-        <!-- Hidden input field to capture card scans -->
-        <input type="text" id="cardScanInput" autocomplete="off">
-        
         <div class="row">
             <div class="img-holder">
                 <div class="bg"></div>
@@ -126,7 +116,7 @@
                         <div class="form-icon">
                             <div class="icon-holder"><img src="images/css_logo.jpeg" alt=""></div>
                         </div>
-                        <h3>Welcome to the Port of Felixstowe PPE Ordering Station</h3>
+                        <h3>Welcome to the Port of Felixstowe PPE Ordering Station.</h3>
                         <p>Swipe your card to quickly access your Chelmsford Safety account.</p>
                         <img src="images/swipe.gif" alt="Swipe Card" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
                         <!-- The form -->
@@ -168,7 +158,7 @@
         // Variable to track if auto-login is pending
         var autoLoginEmail = null;
         
-        // Function to show pickup popup
+        // Function to show pickup popup (simplified - no order number)
         function showPickupPopup() {
             document.getElementById('pickupPopup').classList.add('active');
         }
@@ -184,16 +174,11 @@
                 document.getElementById('username').value = email;
                 document.getElementById('login-form').submit();
             } else {
-                // Clear the card scan input and refocus
-                document.getElementById('cardScanInput').value = '';
-                document.getElementById('cardScanInput').focus();
+                // Clear the input field
+                document.getElementById('username').value = '';
+                // Refocus on the input field
+                document.getElementById('username').focus();
             }
-        }
-        
-        // Function to process direct login (no popup)
-        function processDirectLogin(email) {
-            document.getElementById('username').value = email;
-            document.getElementById('login-form').submit();
         }
         
         // Function to show popup and login when OK is clicked
@@ -203,74 +188,120 @@
             
             // Show the popup
             showPickupPopup();
+            
+            // No timer - user must click OK to proceed
         }
         
-        // Function to evaluate card and determine action
-        function evaluateCard(cardNumber) {
+        // Intercept form submission to check for pickup cards
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            var cardNumber = document.getElementById('username').value;
+            
             // Check if this is a pickup-only notification card
             if (pickupOnlyCards.indexOf(cardNumber) !== -1) {
-                // Show popup only, no login
+                // Prevent form submission
+                event.preventDefault();
+                // Clear the input field
+                document.getElementById('username').value = '';
+                // Show pickup notification popup
                 showPickupPopup();
-                return;
+                return false;
             }
             
             // Check if this is a pickup-then-login card
             if (pickupThenLoginCards.hasOwnProperty(cardNumber)) {
-                // Show popup, then login when OK is clicked
+                // Prevent form submission
+                event.preventDefault();
+                // Clear the input field
+                document.getElementById('username').value = '';
+                // Show popup then wait for OK click
                 showPickupThenLogin(pickupThenLoginCards[cardNumber]);
-                return;
+                return false;
             }
             
-            // Check if this card is in the database
-            if (rfidDatabase.hasOwnProperty(cardNumber)) {
-                // Direct login with email
-                processDirectLogin(rfidDatabase[cardNumber]);
-                return;
-            }
-            
-            // Card not found - submit with card number as-is
-            processDirectLogin(cardNumber);
-        }
+            // Otherwise allow normal form submission
+        });
         
-        // Listen to the hidden card scan input
-        document.getElementById('cardScanInput').addEventListener('input', function(event) {
+        document.getElementById('username').addEventListener('input', function(event) {
             var inputData = event.target.value;
             
             // Check if input has delimiters from magnetic stripe reader
             if (inputData.startsWith('%') && inputData.endsWith('?')) {
                 // Remove the '%' and '?' characters
                 var cardNumber = inputData.slice(1, inputData.length - 1);
-                // Clear the input
-                document.getElementById('cardScanInput').value = '';
-                // Evaluate and process the card
-                evaluateCard(cardNumber);
+                
+                // Check if this is a pickup-only notification card
+                if (pickupOnlyCards.indexOf(cardNumber) !== -1) {
+                    // Clear the input field
+                    document.getElementById('username').value = '';
+                    // Show pickup notification popup
+                    showPickupPopup();
+                    return;
+                }
+                
+                // Check if this is a pickup-then-login card
+                if (pickupThenLoginCards.hasOwnProperty(cardNumber)) {
+                    // Clear the input field
+                    document.getElementById('username').value = '';
+                    // Show popup then auto-login
+                    showPickupThenLogin(pickupThenLoginCards[cardNumber]);
+                    return;
+                }
+                
+                // Check if this card is in the database
+                if (rfidDatabase.hasOwnProperty(cardNumber)) {
+                    // Replace card number with email address
+                    var email = rfidDatabase[cardNumber];
+                    document.getElementById('username').value = email;
+                    setTimeout(function() {
+                        document.getElementById('login-form').submit();
+                    }, 500);
+                } else {
+                    // Card not found - submit as-is
+                    document.getElementById('username').value = cardNumber;
+                    setTimeout(function() {
+                        document.getElementById('login-form').submit();
+                    }, 500);
+                }
             }
-            // RFID cards typically just scan the number directly
-            // Check if input looks complete (8 or 10 digits)
+            // RFID cards typically just scan the number directly (no % or ? delimiters)
+            // Check if input looks complete (8 or 10 digits for your RFID format)
             else if (inputData.length >= 8 && /^\d+$/.test(inputData)) {
                 var cardNumber = inputData;
-                // Clear the input
-                document.getElementById('cardScanInput').value = '';
-                // Evaluate and process the card
-                evaluateCard(cardNumber);
-            }
-        });
-        
-        // Prevent form submission unless triggered by our code
-        document.getElementById('login-form').addEventListener('submit', function(event) {
-            // Only allow submission if username field has a value
-            // (which means our code set it)
-            if (!document.getElementById('username').value) {
-                event.preventDefault();
-                return false;
-            }
-        });
-        
-        // Refocus on card scan input when popup closes
-        document.addEventListener('click', function(event) {
-            // If clicking outside the popup or form, refocus on card scan input
-            if (!document.getElementById('pickupPopup').classList.contains('active')) {
-                document.getElementById('cardScanInput').focus();
+                
+                // Check if this is a pickup-only notification card
+                if (pickupOnlyCards.indexOf(cardNumber) !== -1) {
+                    // Clear the input field
+                    document.getElementById('username').value = '';
+                    // Show pickup notification popup
+                    showPickupPopup();
+                    // DO NOT submit the form
+                    return;
+                }
+                
+                // Check if this is a pickup-then-login card
+                if (pickupThenLoginCards.hasOwnProperty(cardNumber)) {
+                    // Clear the input field
+                    document.getElementById('username').value = '';
+                    // Show popup then auto-login
+                    showPickupThenLogin(pickupThenLoginCards[cardNumber]);
+                    // DO NOT submit the form - wait for OK click
+                    return;
+                }
+                
+                // Check if this card is in the database
+                if (rfidDatabase.hasOwnProperty(cardNumber)) {
+                    // Replace card number with email address
+                    var email = rfidDatabase[cardNumber];
+                    document.getElementById('username').value = email;
+                    setTimeout(function() {
+                        document.getElementById('login-form').submit(); // Auto-submit the form
+                    }, 500); // Short delay to process the card data
+                } else {
+                    // Card not found in database - submit with the card number as-is
+                    setTimeout(function() {
+                        document.getElementById('login-form').submit(); // Auto-submit the form
+                    }, 500);
+                }
             }
         });
     </script>
