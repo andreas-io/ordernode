@@ -98,7 +98,7 @@
             <div class="order-info">
                 <p id="pickupMessage">Your order is ready for collection in <strong>Boardroom Demo Locker</strong></p>
             </div>
-            <button onclick="closePopup()">OK</button>
+
         </div>
     </div>
 
@@ -116,7 +116,7 @@
                         <div class="form-icon">
                             <div class="icon-holder"><img src="images/css_logo.jpeg" alt=""></div>
                         </div>
-                        <h3>Welcome to the Port of Felixstowe PPE Ordering Station.</h3>
+                        <h3>Welcome to the Port of Felixstowe PPE Ordering Station</h3>
                         <p>Swipe your card to quickly access your Chelmsford Safety account.</p>
                         <img src="images/swipe.gif" alt="Swipe Card" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
                         <!-- The form -->
@@ -145,7 +145,7 @@
             // Add more card-to-email mappings here as needed
         };
         
-        // Pickup notification cards with auto-login after clicking OK
+        // Pickup notification cards with auto-login after 5 seconds
         // Maps card number to email address
         var pickupThenLoginCards = {
             '0008883093': 'user@fdrc.com',
@@ -157,6 +157,7 @@
         
         // Variable to track if auto-login is pending
         var autoLoginEmail = null;
+        var autoLoginTimer = null;
         
         // Function to show pickup popup (simplified - no order number)
         function showPickupPopup() {
@@ -166,6 +167,12 @@
         // Function to close popup
         function closePopup() {
             document.getElementById('pickupPopup').classList.remove('active');
+            
+            // Clear any pending auto-login timer
+            if (autoLoginTimer) {
+                clearTimeout(autoLoginTimer);
+                autoLoginTimer = null;
+            }
             
             // If there's a pending auto-login, execute it now
             if (autoLoginEmail) {
@@ -181,7 +188,7 @@
             }
         }
         
-        // Function to show popup and login when OK is clicked
+        // Function to show popup and auto-login after 5 seconds
         function showPickupThenLogin(email) {
             // Store the email for auto-login
             autoLoginEmail = email;
@@ -189,7 +196,10 @@
             // Show the popup
             showPickupPopup();
             
-            // No timer - user must click OK to proceed
+            // Set timer to auto-close and login after 5 seconds
+            autoLoginTimer = setTimeout(function() {
+                closePopup();
+            }, 5000);
         }
         
         // Intercept form submission to check for pickup cards
@@ -206,18 +216,6 @@
                 showPickupPopup();
                 return false;
             }
-            
-            // Check if this is a pickup-then-login card
-            if (pickupThenLoginCards.hasOwnProperty(cardNumber)) {
-                // Prevent form submission
-                event.preventDefault();
-                // Clear the input field
-                document.getElementById('username').value = '';
-                // Show popup then wait for OK click
-                showPickupThenLogin(pickupThenLoginCards[cardNumber]);
-                return false;
-            }
-            
             // Otherwise allow normal form submission
         });
         
@@ -284,7 +282,6 @@
                     document.getElementById('username').value = '';
                     // Show popup then auto-login
                     showPickupThenLogin(pickupThenLoginCards[cardNumber]);
-                    // DO NOT submit the form - wait for OK click
                     return;
                 }
                 
